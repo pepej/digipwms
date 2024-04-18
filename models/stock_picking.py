@@ -89,3 +89,12 @@ class StockMove(models.Model):
                         if r['CodigoArticulo'] == det.product_id.default_code:
                             det.write({'quantity_done': r['UnidadesSatisfecha']})
         return True
+
+    def button_validate(self):        
+        res = super(StockMove, self).button_validate()        
+        url = self.env['ir.config_parameter'].sudo().get_param('digipwms.url')
+        headers = CaseInsensitiveDict()
+        headers["X-API-KEY"] = self.env['ir.config_parameter'].sudo().get_param('digipwms.key')
+        codigo= re.sub('/','_',self.name)
+        resp = requests.put('%s/v1/Pedidos/%s/Remitido' % (url,codigo), headers=headers)
+        return res
